@@ -13,15 +13,7 @@ def messages(message, lang)
 end
 
 def valid_number?(num)
-  integer?(num) || float?(num)
-end
-
-def integer?(num)
-  num.to_i == (Integer(num) rescue nil)
-end
-
-def float?(num)
-  num.to_f == (Float(num) rescue nil)
+  num.match(/\A[0-9]*\.[0-9]*\z/) || num.match(/\A[0-9]+\z/)
 end
 
 def operation_to_message(op)
@@ -106,25 +98,7 @@ loop do
     end
   end
 
-  if lang == 'es'
-    operator_prompt = <<-MSG
-      ¿Que operacion quiere hacer?
-      1) añadir
-      2) sustraer
-      3) multiplicar
-      4) dividir
-    MSG
-  else
-    operator_prompt = <<-MSG
-      What operation would you like to perform?
-      1) add
-      2) subtract
-      3) multiply
-      4) divide
-    MSG
-  end
-
-  prompt(operator_prompt)
+  messages("operator_prompt", lang)
 
   operator = ''
 
@@ -151,15 +125,18 @@ loop do
 
   if lang == 'es'
     prompt(operacion_a_mensaje(operator))
-    prompt("El resultado es #{result}")
+    prompt("El resultado es: #{format('%02.2f', result)}.")
   else
     prompt(operation_to_message(operator))
-    prompt("The result is #{result}.")
+    prompt("The result is: #{format('%02.2f', result)}.")
   end
 
   messages('repeat?', lang)
   answer = Kernel.gets().chomp()
+
   break unless answer.downcase() == 'y'
+
+  system('clear') || system('cls')
 end
 
 messages('farewell', lang)
