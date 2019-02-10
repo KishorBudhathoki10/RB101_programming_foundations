@@ -10,11 +10,11 @@ def messages(input, lang)
   if lang != 'es'
     lang = 'en'
   end
-  prompt(MESSAGES[lang][input]) 
+  prompt(MESSAGES[lang][input])
 end
 
 def integer?(input)
-  Integer(input) rescue false 
+  Integer(input) rescue false
 end
 
 def float?(input)
@@ -37,12 +37,11 @@ messages("welcome", lang)
 
 prompt("------------------------------")
 
-loop do 
-
+loop do
   messages("loan", lang)
   amount = ''
 
-  loop do 
+  loop do
     amount = Kernel.gets().chomp()
 
     if integer?(amount) && amount.to_i > 0
@@ -56,7 +55,7 @@ loop do
   messages("example", lang)
 
   interest_rate = ''
-  loop do 
+  loop do
     interest_rate = Kernel.gets().chomp()
 
     if float?(interest_rate) && interest_rate.to_f > 0
@@ -69,10 +68,10 @@ loop do
   messages("duration", lang)
   years = ''
 
-  loop do 
+  loop do
     years = Kernel.gets().chomp()
 
-    if integer?(years) && years.to_i > 0 
+    if integer?(years) && years.to_i > 0
       break
     else
       messages("error", lang)
@@ -83,9 +82,9 @@ loop do
   monthly_interest_rate = annual_interest_rate / 12
   months = years.to_i() * 12
 
-  monthly_payment = amount.to_f * 
+  monthly_payment = amount.to_f *
                     (monthly_interest_rate /
-                    (1 - (1 + monthly_interest_rate)**(-months)))
+                    (1 - (1 + monthly_interest_rate)**-months))
 
   if lang == 'es'
     prompt("Su pago mensual es: #{format('%0.2f', monthly_payment)}")
