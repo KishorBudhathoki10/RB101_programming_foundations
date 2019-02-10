@@ -1,0 +1,21 @@
+en:
+  welcome: "Welcome to calculator! Enter your name:"
+  valid_name: "Make sure to enter a valid name."
+  greeting: "Hi! "
+  first_num: "What's the first number?"
+  valid_number: "Something is wrong. Please type again."
+  second_num: "What's the second number?"
+  choose: "Must choose 1, 2, 3 or 4."
+  repeat?: "Do you want to perform another calculation? ('y' to calculate again)"
+  farewell: "Thank you for using the calculator. Good bye!"
+
+es:
+  welcome: "Bienvenido a la calculadora! Entre su nombre:"
+  valid_name: "Asegúrese de entrar un nombre válido."
+  greeting: "Hola! "
+  first_num: "¿Cual es el primero numero?"
+  valid_number: "Algo salió mal. Por favor prueba otra vez."
+  second_num: "¿Cual es el segundo numero?"
+  choose: "Tiene que escoger 1, 2, 3 o 4."
+  repeat?: "¿Quiere hacer otra calculacion? ('y' para calcular otra vez)"
+  farewell: "Gracias por usar el calculador. Hasta la proxima!"

@@ -1,0 +1,20 @@
+en:
+  welcome: "Welcome to Mortage Calculator!"
+  loan: "What is the loan amount?"
+  error: "Something went wrong. Please enter a valid number."
+  interest_rate: "What is the interest rate?"
+  example: "(Example: 5 for 5% or 2.5 for 2.5%)"
+  duration: "What is the loan duration (in years)?"
+  repeat: "Another calculation?('y' for yes)"
+  farewell: "Thank you for using the Mortage Calculator! Good Bye!"
+
+es:
+  welcome: "Bienvenido a la calculadora de hipotecas!"
+  loan: "¿Cual es la cantidad del prestamo?"
+  error: "Algo salio mal. Por favor entre un numero valido."
+  interest_rate: "¿Cual es la tasa de interés?"
+  example: "(Ejemplo: 5 por 5% o 2.5 por 2.5%)"
+  duration: "¿Cual es la duracion del prestamo (en años)?"
+  repeat: "¿Quieres hacer otra calculacion?('y' para si)"
+  farewell: "Gracias por usar la calculadora de hipotecas. Hasta la proxima!"
+  
