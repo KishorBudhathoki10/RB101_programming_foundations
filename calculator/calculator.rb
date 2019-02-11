@@ -16,29 +16,16 @@ def valid_number?(num)
   num.match(/\A[0-9]*\.[0-9]*\z/) || num.match(/\A[0-9]+\z/)
 end
 
-def operation_to_message(op)
+def operation_to_message(op, lang)
   case op
   when '1'
-    "Adding the two numbers...."
+    messages("adding_message", lang)
   when '2'
-    "Subtracting the two numbers...."
+    messages("subtracting_message", lang)
   when '3'
-    "Multiplying the two numbers...."
+    messages("multiplying_message", lang)
   when '4'
-    "Dividing the two numbers...."
-  end
-end
-
-def operacion_a_mensaje(op)
-  case op
-  when '1'
-    "Añadiendo los dos numeros...."
-  when '2'
-    "Sustraiendo los dos numeros...."
-  when '3'
-    "Multiplicando los dos numeros...."
-  when '4'
-    "Dividiendo los dos numeros...."
+    messages("dividing_message", lang)
   end
 end
 
@@ -123,11 +110,11 @@ loop do
              number1.to_f() / number2.to_f()
            end
 
+  operation_to_message(operator, lang)
+
   if lang == 'es'
-    prompt(operacion_a_mensaje(operator))
     prompt("El resultado es: #{format('%02.2f', result)}.")
   else
-    prompt(operation_to_message(operator))
     prompt("The result is: #{format('%02.2f', result)}.")
   end
 
