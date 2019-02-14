@@ -36,6 +36,8 @@ def current_score(player, computer)
   puts "+---------------------+"
 end
 
+system('clear') || system('cls')
+
 prompt("Welcome to the Rock Paper Scissors Lizard and Spock game.")
 prompt("Any player who wins first 5 times will be our Grand Winner.")
 
