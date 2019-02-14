@@ -18,7 +18,7 @@ def prompt(message)
   Kernel.puts("=> #{message}")
 end
 
-def display_result(player, computer)
+def result(player, computer)
   if WINNING_PIECES[player].include?(computer)
     "You won!"
   elsif WINNING_PIECES[computer].include?(player)
@@ -59,11 +59,8 @@ loop do
     prompt(choosing_option)
     choice = Kernel.gets().chomp()
 
-    if %w(1 2 3 4 5).include?(choice)
-      break
-    else
-      prompt("That's not a valid choice.")
-    end
+    break if %w(1 2 3 4 5).include?(choice)
+    prompt("That's not a valid choice.")
   end
 
   computer_choice = VALID_CHOICES.values.sample
@@ -74,12 +71,11 @@ loop do
 
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
-  result = display_result(choice, computer_choice)
-  prompt(result)
+  prompt(result(choice, computer_choice))
 
-  if result == 'You won!'
+  if result(choice, computer_choice) == 'You won!'
     your_score += 1
-  elsif result == 'Computer won!'
+  elsif result(choice, computer_choice) == 'Computer won!'
     computer_score += 1
   end
 
