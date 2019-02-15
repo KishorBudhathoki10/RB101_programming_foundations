@@ -71,11 +71,13 @@ loop do
 
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
-  prompt(result(choice, computer_choice))
+  display_result = result(choice, computer_choice)
 
-  if result(choice, computer_choice) == 'You won!'
+  prompt(display_result)
+
+  if display_result == 'You won!'
     your_score += 1
-  elsif result(choice, computer_choice) == 'Computer won!'
+  elsif display_result == 'Computer won!'
     computer_score += 1
   end
 
