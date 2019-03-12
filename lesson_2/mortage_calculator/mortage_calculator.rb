@@ -21,6 +21,8 @@ def float?(input)
   Float(input) rescue false
 end
 
+system('clear')
+
 language = <<-MSG
 Choose your language:
 1) Type 'es' for spanish
