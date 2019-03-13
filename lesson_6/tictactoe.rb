@@ -195,8 +195,8 @@ def retrieve_name
   name = ''
   loop do
     name = gets.chomp
-    break if name.length <= 6
-    prompt("Too many characters. Please enter maximum 6 characters.")
+    break if name.length <= 6 && name.length > 1 && name[0..1] != "  "
+    prompt("Please enter minimum 2 and maximum 6 characters.")
   end
   name
 end
@@ -249,12 +249,20 @@ def game_mode_two_message(game_mode)
   five_matches_game_prompt if game_mode == '2'
 end
 
+def game_result(computers_score, player_score, player_name, game_mode)
+  if game_mode == '2'
+    five_matches_game_result(computers_score, player_name)
+  else
+    instant_game_result(computers_score, player_score, player_name)
+  end
+end
+
 loop do
   system('clear')
   puts " ***Welcome to TIC-TAC-TOE game***"
   puts "==================================="
 
-  prompt("Please enter your name. (Max characters: 6)")
+  prompt("Please enter your name. (Min character: 2 and Max characters: 6)")
   player_name = retrieve_name
 
   clear_terminal
@@ -351,14 +359,11 @@ loop do
   sleep(4)
   clear_terminal
 
-  if game_mode == '2'
-    five_matches_game_result(computers_score, player_name)
-  else
-    instant_game_result(computers_score, player_score, player_name)
-  end
+  game_result(computers_score, player_score, player_name, game_mode)
 
   puts "------------------------------------------------"
-  prompt("Do you want to play again? Type y to repeat.")
+  prompt("Do you want to play again? Type 'y' and hit enter to repeat.")
+  prompt "If you type other letters the game will exit."
   repeat = gets.chomp
   break if repeat.downcase != 'y'
 end
