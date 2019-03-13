@@ -1,3 +1,4 @@
+require 'pry'
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] + # rows
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] + # cols
                 [[1, 5, 9], [3, 5, 7]]              # diagonals
@@ -13,7 +14,6 @@ end
 
 # rubocop:disable Metrics/AbcSize
 def display_board(brd)
-  prompt("Any player who wins first 5 times is our final Winner.")
   puts "You're a #{PLAYER_MARKER}. Computer is #{COMPUTER_MARKER}."
   puts ""
   puts "          |     |"
@@ -28,8 +28,13 @@ def display_board(brd)
   puts "       #{brd[7]}  |  #{brd[8]}  |  #{brd[9]}"
   puts "          |     |"
   puts ""
+  puts ''
 end
 # rubocop:enable Metrics/AbcSize
+
+def quit_message
+  puts "press (ctrl + z) to quit the game."
+end
 
 def joinor(arr, delimiter = ', ', word = 'or')
   case arr.size
@@ -63,14 +68,14 @@ def players_piece(brd)
   square
 end
 
-def find_at_risk_square(line, board, marker)
-  if board.values_at(*line).count(marker) == 2
-    return board.select { |k, v| line.include?(k) && v == ' ' }.keys.first
+def find_at_risk_square(line, brd, marker)
+  if brd.values_at(*line).count(marker) == 2
+    return brd.select { |k, v| line.include?(k) && v == ' ' }.keys.first
   end
   nil
 end
 
-def find_square(brd, marker)
+def retrieve_at_risk_square(brd, marker)
   square = nil
   WINNING_LINES.each do |line|
     square = find_at_risk_square(line, brd, marker)
@@ -80,36 +85,47 @@ def find_square(brd, marker)
 end
 
 def level_3_attack(brd)
-  [3, 1, 7, 9].each do |num|
+  attack = [[3, 1], [3, 9], [1, 3], [1, 7]] +
+           [[7, 1], [7, 9], [9, 3], [9, 7]].sample
+
+  attack.each do |num|
     if brd[num] == INITIAL_MARKER
       return num
     end
   end
+  false
 end
 
-# rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-# rubocop:disable Metrics/AbcSize
-def computers_piece(brd)
-  # offense first
-  square = find_square(brd, COMPUTER_MARKER)
-  # defense
-  if (LEVEL == '3' || LEVEL == '2') && !square
-    square = find_square(brd, PLAYER_MARKER)
-  end
-
-  if !square
-    square = empty_squares(brd).sample
-    if LEVEL == '3'
-      return square = 5 if brd[5] == INITIAL_MARKER
-      square = level_3_attack(brd)
-    elsif LEVEL == '2'
-      square = 5 if brd[5] == INITIAL_MARKER
-    end
-  end
+def level_2_computer_play(brd)
+  square = retrieve_at_risk_square(brd, PLAYER_MARKER)
+  square = empty_squares(brd).sample if !square
+  square = 5 if brd[5] == INITIAL_MARKER
   square
 end
-# rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-# rubocop:enable Metrics/AbcSize
+
+def level_3_computer_play(brd)
+  square = retrieve_at_risk_square(brd, PLAYER_MARKER)
+  return square = 5 if brd[5] == INITIAL_MARKER
+  square = level_3_attack(brd) if !square
+  square = empty_squares(brd).sample if !square
+  square
+end
+
+def computers_piece(brd)
+  # offense first
+  square = retrieve_at_risk_square(brd, COMPUTER_MARKER)
+  # defense
+  if (LEVEL == '2') && !square
+    return square = level_2_computer_play(brd)
+  end
+
+  if (LEVEL == '3') && !square
+    return square = level_3_computer_play(brd)
+  end
+
+  square = empty_squares(brd).sample if !square
+  square
+end
 
 def place_piece!(brd, current_player)
   if current_player == 'c'
@@ -130,14 +146,14 @@ def board_full?(brd)
   empty_squares(brd).empty?
 end
 
-def someone_won?(brd)
-  !!detect_winner(brd)
+def someone_won?(brd, player_name)
+  !!detect_winner(brd, player_name)
 end
 
-def detect_winner(brd)
+def detect_winner(brd, player_name)
   WINNING_LINES.each do |line|
     if brd.values_at(*line).count(PLAYER_MARKER) == 3
-      return 'Player'
+      return player_name
     elsif brd.values_at(*line).count(COMPUTER_MARKER) == 3
       return 'Computer'
     end
@@ -155,103 +171,199 @@ def goes_first
   current_player
 end
 
-def display_result(player, computer)
-  puts "     +-------------------+"
-  puts "     |   Current Scores  |"
-  puts "     |-------------------|"
-  puts "     |   Your: #{player}       |"
-  puts "     |   Computer: #{computer}     |"
-  puts "     +-------------------+"
-  puts "====================================="
+def computer_won_match?(computers_score)
+  computers_score == WINNING_SCORE
 end
 
-system('clear')
-prompt("Welcome to TIC-TAC-TOE game.")
-starter = FIRST_PLAYER
-
-if FIRST_PLAYER == 'choose'
-  prompt("Choose who starts. Enter 'c' for computer or 'p' for player")
-  starter = goes_first
+def clear_terminal
+  system('clear') || system('cls')
 end
-choose_level = <<-MSG
-Please select one game level:
-1. Easy
-2. Medium
-3. Hard
-Type (1, 2 or 3)
-MSG
 
-prompt(choose_level)
-level = ''
+def first_player_not_selected?
+  FIRST_PLAYER == 'choose'
+end
+
+def display_result(player, computer, player_name)
+  puts "  +------------------------------+"
+  puts "  |        Current Scores        |"
+  puts "  +------------------------------+"
+  puts "     #{player_name}: #{player}  ||  Computer: #{computer}"
+  puts "=========================================="
+end
+
+def retrieve_name
+  name = ''
+  loop do
+    name = gets.chomp
+    break if name.length <= 6
+    prompt("Too many characters. Please enter maximum 6 characters.")
+  end
+  name
+end
+
+def retrieve_game_mode
+  mode = ''
+  loop do
+    mode = gets.chomp
+    break if mode == '1' || mode == '2'
+    prompt("Must choose: 1 or 2")
+  end
+  mode
+end
+
+def choose_level
+  level = ''
+  loop do
+    level = gets.chomp
+    break if ['1', '2', '3'].include?(level)
+    prompt("Please select (1, 2, or 3).")
+  end
+  level
+end
+
+def five_matches_game_prompt
+  puts ''
+  puts "--- Any player who wins first five times is our Grand Winner. ---"
+  puts ''
+end
+
+def instant_game_result(computers_score, player_score, player_name)
+  if computers_score > player_score
+    prompt("Computer won you.")
+  elsif player_score > computers_score
+    prompt("#{player_name} won this game.")
+  else
+    prompt("It is a tie.")
+  end
+end
+
+def five_matches_game_result(computers_score, player_name)
+  if computer_won_match?(computers_score)
+    prompt("Computer is our Final Winner. Better luck next time.")
+  else
+    prompt("Congratulation #{player_name}! You are our Final Winner.")
+  end
+end
+
+def game_mode_two_message(game_mode)
+  five_matches_game_prompt if game_mode == '2'
+end
+
 loop do
-  level = gets.chomp
-  break if ['1', '2', '3'].include?(level)
-  prompt("Please select (1, 2, or 3).")
-end
+  system('clear')
+  puts " ***Welcome to TIC-TAC-TOE game***"
+  puts "==================================="
 
-LEVEL = level
+  prompt("Please enter your name. (Max characters: 6)")
+  player_name = retrieve_name
 
-player_score = 0
-computers_score = 0
-round = 1
+  clear_terminal
 
-loop do
-  board = initialize_board
-  current_player = starter
+  starter = FIRST_PLAYER
+
+  if first_player_not_selected?
+    prompt("Welcome! #{player_name}")
+    prompt("Choose who starts. Enter 'c' for computer or 'p' for player")
+    starter = goes_first
+    clear_terminal
+  end
+
+  puts"              Select Mode:"
+  puts '--------------------------------------------'
+  puts "1) Instant game   ||  2) Five matches to win"
+  puts''
+  prompt("Choose 1 or 2")
+  game_mode = retrieve_game_mode
+
+  clear_terminal
+
+  different_levels = <<-MSG
+  Welcome #{player_name}
+  Please select the game level:
+  1. Easy
+  2. Medium
+  3. Hard
+  MSG
+
+  prompt(different_levels)
+  puts '-------------------------------'
+  prompt("Type (1, 2 or 3)")
+  level = choose_level
+
+  LEVEL = level
+
+  player_score = 0
+  computers_score = 0
+  round = 1
 
   loop do
-    system('clear')
+    board = initialize_board
+    current_player = starter
+
+    loop do
+      clear_terminal
+      prompt("Round: #{round}")
+
+      display_result(player_score, computers_score, player_name)
+      game_mode_two_message(game_mode)
+      display_board(board)
+      quit_message
+      place_piece!(board, current_player)
+      current_player = alternate_player(current_player)
+      break if someone_won?(board, player_name) || board_full?(board)
+    end
+
+    clear_terminal
+
+    if detect_winner(board, player_name) == player_name
+      player_score += 1
+    elsif detect_winner(board, player_name) == 'Computer'
+      computers_score += 1
+    end
+
     prompt("Round: #{round}")
-
-    display_result(player_score, computers_score)
+    display_result(player_score, computers_score, player_name)
+    game_mode_two_message(game_mode)
     display_board(board)
-    place_piece!(board, current_player)
-    current_player = alternate_player(current_player)
-    break if someone_won?(board) || board_full?(board)
+    quit_message
+
+    if someone_won?(board, player_name)
+      prompt("#{detect_winner(board, player_name)} won!")
+    else
+      prompt("It's a tie!")
+    end
+
+    break if game_mode == '1'
+    break if player_score == WINNING_SCORE || computers_score == WINNING_SCORE
+
+    round += 1
+
+    if first_player_not_selected?
+      prompt("Choose who starts in Round #{round}: 'p' player or 'c' computer)")
+      starter = goes_first
+    else
+      prompt("Press enter to start Round #{round}.")
+      gets.chomp
+      starter = alternate_player(starter)
+    end
   end
 
-  system('clear')
+  sleep(4)
+  clear_terminal
 
-  if detect_winner(board) == 'Player'
-    player_score += 1
-  elsif detect_winner(board) == 'Computer'
-    computers_score += 1
-  end
-
-  prompt("Round: #{round}")
-  display_result(player_score, computers_score)
-  display_board(board)
-
-  if someone_won?(board)
-    prompt("#{detect_winner(board)} won!")
+  if game_mode == '2'
+    five_matches_game_result(computers_score, player_name)
   else
-    prompt("It's a tie!")
+    instant_game_result(computers_score, player_score, player_name)
   end
 
-  break if player_score == WINNING_SCORE || computers_score == WINNING_SCORE
-
-  round += 1
-
-  if FIRST_PLAYER == 'choose'
-    prompt("Choose who starts in Round #{round}: 'p' player or 'c' computer) ")
-    starter = goes_first
-  else
-    prompt("Press enter to start Round #{round}.")
-    gets.chomp
-    starter = alternate_player(starter)
-  end
-end
-
-sleep(4)
-system('clear')
-
-if computers_score == WINNING_SCORE
-  prompt("Computer is our Final Winner. Better luck next time.")
-else
-  prompt("Congratulation! You are our Final Winner.")
+  puts "------------------------------------------------"
+  prompt("Do you want to play again? Type y to repeat.")
+  repeat = gets.chomp
+  break if repeat.downcase != 'y'
 end
 
 prompt("Thanks for playing Tic Tac Toe.")
 
 sleep(6)
-system('clear')
+clear_terminal
