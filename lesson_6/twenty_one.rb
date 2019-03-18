@@ -54,20 +54,10 @@ def ask_and_retrieve_name
   name
 end
 
-def show_player_cards(player_cards, player_name)
+def show_cards(cards, player_name = 'Computer')
   puts ""
-  prompt("#{player_name} you have following cards:")
-  player_cards.each_with_index do |card, idx|
-    idx += 1
-    print "#{idx}) #{card[1]} of #{card[0]}     "
-  end
-  puts ''
-  puts ''
-end
-
-def show_computer_cards(computer_cards)
-  prompt("Computer has following cards:")
-  computer_cards.each_with_index do |card, idx|
+  prompt("#{player_name} has following cards:")
+  cards.each_with_index do |card, idx|
     idx += 1
     print "#{idx}) #{card[1]} of #{card[0]}     "
   end
@@ -82,28 +72,28 @@ def show_one_card_of_computer(computer_cards)
   puts ''
 end
 
-def player_hit_or_stay(player_name, player_cards, deck, players_total)
+def player_turn(player_name, player_cards, deck, players_total)
   loop do
     prompt("#{player_name} your want to hit or stay?")
     prompt "Type 'h' for hit or 's' for stay. Press (ctrl+z) to quit."
-    answer = hit_or_stay(player_cards, deck, players_total)
+    answer = player_hit_or_stay(player_cards, deck, players_total)
     players_total = calculate_total(player_cards)
     break if answer == 's' || busted?(players_total)
   end
 end
 
-def hit_or_stay(player_cards, deck, players_total)
+def player_hit_or_stay(player_cards, deck, players_total)
   answer = ''
   loop do
     answer = gets.chomp
-    if answer == 'h'
+    if ['h', 'H'].include?(answer)
       player_cards << deck.pop
       prompt "Your new card is #{player_cards[-1][1]} of #{player_cards[-1][0]}"
       prompt "Your total is: #{calculate_total(player_cards)}"
       puts ""
       break
     end
-    break if answer == 's' || busted?(players_total)
+    break if ['s', 'S'].include?(answer) || busted?(players_total)
 
     prompt("Invalid input. You must type 'h'  or 's'.")
   end
@@ -162,17 +152,9 @@ def show_total(computers_total, players_total, player_name)
   puts ""
 end
 
-def computer_busted_msg(player_name, computers_total)
-  prompt "Computer is busted! #{player_name} you won this game."
-  prompt "Computer's total is: #{computers_total}."
-  puts ''
-  stop_unless_hit_enter
-  clear_terminal
-end
-
-def player_busted_msg(player_name, players_total)
-  prompt "#{player_name} you are busted! Computer won this game."
-  prompt "Your total is: #{players_total}."
+def busted_msg(player1_name, player2_name, players1_total)
+  prompt "#{player1_name} is busted! #{player2_name} won this game."
+  prompt "#{player1_name}'s total is: #{players1_total}."
   puts ''
   stop_unless_hit_enter
   clear_terminal
@@ -204,7 +186,7 @@ def mode_starting_msg(game_mode)
   end
 end
 
-def someone_won?(player_score, computer_score)
+def someone_won_match?(player_score, computer_score)
   player_score == WINNING_SCORE || computer_score == WINNING_SCORE
 end
 
@@ -226,12 +208,12 @@ def game_mode_two?(game_mode)
   game_mode == '2'
 end
 
+clear_terminal
+
+game_welcome_msg
+player_name = ask_and_retrieve_name.capitalize
+
 loop do
-  clear_terminal
-
-  game_welcome_msg
-  player_name = ask_and_retrieve_name.capitalize
-
   clear_terminal
 
   game_mode_msg
@@ -251,7 +233,7 @@ loop do
 
   loop do
     prompt "Dealing cards to player and computer......."
-    sleep(2)
+    sleep(1)
 
     clear_terminal
 
@@ -273,26 +255,26 @@ loop do
       show_current_scores(player_name, player_score, computer_score)
 
       five_matches_game_prompt if game_mode_two?(game_mode)
-      show_player_cards(player_cards, player_name)
+      show_cards(player_cards, player_name)
 
       puts '---------------------------------------'
       puts ''
       show_one_card_of_computer(computer_cards)
 
-      player_hit_or_stay(player_name, player_cards, deck, players_total)
+      player_turn(player_name, player_cards, deck, players_total)
       players_total = calculate_total(player_cards)
 
       clear_terminal
 
       if busted?(players_total)
-        show_player_cards(player_cards, player_name)
-        player_busted_msg(player_name, players_total)
+        show_cards(player_cards, player_name)
+        busted_msg(player_name, 'Computer', players_total)
         computer_score += 1
         break
       end
 
       prompt("Computer is making his move......")
-      sleep(3)
+      sleep(1)
 
       clear_terminal
 
@@ -303,12 +285,12 @@ loop do
       show_round(round)
       show_current_scores(player_name, player_score, computer_score)
 
-      show_player_cards(player_cards, player_name)
+      show_cards(player_cards, player_name)
 
-      show_computer_cards(computer_cards)
+      show_cards(computer_cards)
 
       if busted?(computers_total)
-        computer_busted_msg(player_name, computers_total)
+        busted_msg('Computer', player_name, computers_total)
         player_score += 1
         break
       end
@@ -328,12 +310,14 @@ loop do
 
     break if game_mode == '1'
 
-    if someone_won?(player_score, computer_score)
+    if someone_won_match?(player_score, computer_score)
+      puts "***********************************************************"
       if computer_won?(computer_score, player_score)
         prompt "Computer is our grand winner. He beat you five times."
       else
         prompt "Comgratulations #{player_name}! You are our Grand Master."
       end
+      puts "***********************************************************"
       puts ''
       break
     end
@@ -343,5 +327,5 @@ loop do
 end
 
 prompt "Thank you for playing Twenty-One. See you soon."
-sleep(3)
+sleep(2)
 clear_terminal
