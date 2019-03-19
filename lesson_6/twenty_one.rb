@@ -65,37 +65,49 @@ def show_cards(cards, player_name = 'Computer')
   puts ''
 end
 
-def show_one_card_of_computer(computer_cards)
+def show_one_card_of_computer(cards)
   prompt "Computer's one card is:"
-  puts "1) #{computer_cards[0][1]} of #{computer_cards[0][0]}"
+  puts "1) #{cards[0][1]} of #{cards[0][0]}"
   puts ''
   puts ''
 end
 
-def player_turn(player_name, player_cards, deck, players_total)
+def display_hit_or_stay(name)
+  prompt("#{name} your want to hit or stay?")
+  prompt "Type 'h' for hit or 's' for stay. Press (ctrl+z) to quit."
+end
+
+def player_turn(name, cards, deck, total)
   loop do
-    prompt("#{player_name} your want to hit or stay?")
-    prompt "Type 'h' for hit or 's' for stay. Press (ctrl+z) to quit."
-    answer = player_hit_or_stay(player_cards, deck, players_total)
-    players_total = calculate_total(player_cards)
-    break if answer == 's' || busted?(players_total)
+    display_hit_or_stay(name)
+    answer = retrieve_hit_stay_answer
+    pull_card_from_deck(cards, deck) if player_hit?(answer)
+    total = calculate_total(cards)
+    break if player_stay?(answer) || busted?(total)
   end
 end
 
-def player_hit_or_stay(player_cards, deck, players_total)
+def player_hit?(answer)
+  answer.match?(/(h)/i)
+end
+
+def player_stay?(answer)
+  answer.match?(/(s)/i)
+end
+
+def pull_card_from_deck(cards, deck)
+  cards << deck.pop
+  prompt "Your new card is #{cards[-1][1]} of #{cards[-1][0]}"
+  prompt "Your total is: #{calculate_total(cards)}"
+  puts ""
+end
+
+def retrieve_hit_stay_answer
   answer = ''
   loop do
     answer = gets.chomp
-    if ['h', 'H'].include?(answer)
-      player_cards << deck.pop
-      prompt "Your new card is #{player_cards[-1][1]} of #{player_cards[-1][0]}"
-      prompt "Your total is: #{calculate_total(player_cards)}"
-      puts ""
-      break
-    end
-    break if ['s', 'S'].include?(answer) || busted?(players_total)
-
-    prompt("Invalid input. You must type 'h'  or 's'.")
+    break if ['h', 'H', 'S', 's'].include?(answer)
+    prompt("Invalid input. You must type 'h' or 's'.")
   end
   answer
 end
@@ -104,11 +116,11 @@ def busted?(cards)
   cards > HAND_LIMIT
 end
 
-def computer_hit_or_stay(computer_cards, deck, computers_total)
+def computer_hit_or_stay(cards, deck, total)
   loop do
-    break if computers_total >= COMPUTER_LIMIT || busted?(computers_total)
-    computer_cards << deck.pop
-    computers_total = calculate_total(computer_cards)
+    break if total >= COMPUTER_LIMIT || busted?(total)
+    cards << deck.pop
+    total = calculate_total(cards)
   end
 end
 
@@ -315,7 +327,7 @@ loop do
       if computer_won?(computer_score, player_score)
         prompt "Computer is our grand winner. He beat you five times."
       else
-        prompt "Comgratulations #{player_name}! You are our Grand Master."
+        prompt "Congratulations #{player_name}! You are our Grand Master."
       end
       puts "***********************************************************"
       puts ''
